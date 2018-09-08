@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #define LED_PIN 13
 
@@ -6,9 +8,9 @@ unsigned int localPort = 8888;       // local port to listen for UDP packets
 
 const char* timeServer = "time.nist.gov"; // time.nist.gov NTP server
 
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+WiFiUDP ntpUDP;
 
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+NTPClient timeClient(ntpUDP);
 
 void setup() {
   pinMode(LED_PIN, OUTPUT);     // Initialize the LED_PIN pin as an output
@@ -30,6 +32,7 @@ void setup() {
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
 
+  timeClient.begin();
 }
 
 /**
@@ -38,10 +41,10 @@ void setup() {
 void loop() {
 
     WiFiClient client;
-    if (!client.connect(timeServer, localPort)) {
-      Serial.println("connection failed");
-      return;
-    }
+
+    timeClient.update();
+    Serial.println("time is ")
+    Serial.println(timeClient.getFormattedTime());
 
     for(int i=0; i<1203; i++){
         analogWrite(LED_PIN, i);
